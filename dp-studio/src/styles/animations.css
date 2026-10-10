@@ -1,0 +1,99 @@
+/* Ambient, CSS-only motion (cheap, GPU-friendly: transform + opacity only). */
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+@keyframes rays-drift {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes lock-glint {
+  0%,
+  100% {
+    filter: drop-shadow(0 6px 6px rgba(80, 40, 10, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 6px 6px rgba(80, 40, 10, 0.4)) drop-shadow(0 0 10px rgba(246, 194, 122, 0.95));
+  }
+}
+
+@keyframes loader-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sparkle {
+  animation-name: twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+.bd-rays {
+  animation: rays-drift 18s ease-in-out infinite;
+  transform-origin: 85% 0;
+}
+.bd-glow {
+  animation: glow-breathe 9s ease-in-out infinite;
+}
+/* A gentle glint on the lock once it's ready, so it reads as "the thing to press". */
+.lock:not(:disabled) {
+  animation: lock-glint 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle {
+    animation: none;
+    opacity: 0.45;
+  }
+  .bd-rays,
+  .bd-glow,
+  .lock:not(:disabled),
+  .loader-bar::after {
+    animation: none;
+  }
+  .detail-overlay {
+    animation: none;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
