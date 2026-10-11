@@ -2,6 +2,7 @@ import { Fragment, useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { PROFILE } from '../data/profile';
+import { sound } from '../audio/sound';
 
 interface Props {
   /** The visitor's name — rendered as plain text, never as HTML. */
@@ -43,7 +44,8 @@ export default function WelcomeScene({ name, onDone }: Props) {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       // 1. gradient/backdrop is persistent — fade the composition in over it
-      tl.fromTo(root.current, { opacity: 0 }, { opacity: 1, duration: 0.7 }, 0)
+      tl.call(() => sound.play('reveal'), undefined, 0.2)
+        .fromTo(root.current, { opacity: 0 }, { opacity: 1, duration: 0.7 }, 0)
         .fromTo('.welcome-inner', { scale: R ? 1 : 1.04 }, { scale: 1, duration: 4.5, ease: 'power1.out' }, 0)
         // 2. WELCOME, letter by letter
         .fromTo(
@@ -69,17 +71,15 @@ export default function WelcomeScene({ name, onDone }: Props) {
 
       // 5. soft copper light sweep across the headline
       if (!R) {
-        tl.fromTo(
-          '.sweep',
-          { xPercent: -130, opacity: 1 },
-          { xPercent: 460, duration: 1.5, ease: 'power2.inOut' },
-          '>-0.9',
-        ).set('.sweep', { opacity: 0 });
+        tl.call(() => sound.play('shimmer'), undefined, '>-0.9')
+          .fromTo('.sweep', { xPercent: -130, opacity: 1 }, { xPercent: 460, duration: 1.5, ease: 'power2.inOut' }, '<')
+          .set('.sweep', { opacity: 0 });
       }
 
       // 6. settled. The 5-second hold starts only now, after everything above has finished.
       tl.addLabel('revealed')
         .to({}, { duration: 5 })
+        .call(() => sound.play('whoosh'))
         // soft fade + slight zoom + light sweep into the book scene
         .to('.exit-sweep', { xPercent: 420, duration: 1, ease: 'power2.inOut' }, '>')
         .to(

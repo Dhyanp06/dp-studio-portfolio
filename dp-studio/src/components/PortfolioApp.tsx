@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Backdrop from './Backdrop';
+import SoundToggle from './SoundToggle';
 import WelcomeScene from './WelcomeScene';
 import OpenBookPortfolio from './OpenBookPortfolio';
 import IntroScene from '../scenes/IntroScene';
@@ -26,6 +27,7 @@ export default function PortfolioApp() {
   return (
     <main className="app" data-scene={scene}>
       <Backdrop />
+      <SoundToggle />
 
       {inIntro && (
         <IntroScene

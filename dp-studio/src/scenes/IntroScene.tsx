@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import RobotCharacter, { type RobotPose } from '../components/RobotCharacter';
 import VisitorNameForm from '../components/VisitorNameForm';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { sound } from '../audio/sound';
 
 interface Props {
   scene: 'intro' | 'name-form';
@@ -37,13 +38,20 @@ export default function IntroScene({ scene, onIntroDone, onSubmitName, onExited 
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
       tl.set('.robot-wrap', { x: startX, autoAlpha: 1 })
         .call(() => setPose('walking'))
+        .call(() => sound.footsteps(R ? 0.5 : 2.3))
         // 1–2. enters from the right and walks to the centre
         .fromTo('.robot-wrap', { x: startX }, { x: 0, duration: R ? 0.5 : 2.3, ease: 'sine.out' })
         // 3. stops and looks at the viewer
-        .call(() => setPose('idle'))
+        .call(() => {
+          setPose('idle');
+          sound.stopFootsteps();
+        })
         .to({}, { duration: R ? 0.1 : 0.35 })
         // 4. waves, while HELLO reveals
-        .call(() => setPose('waving'))
+        .call(() => {
+          setPose('waving');
+          sound.play('hello');
+        })
         .fromTo(
           '.hello-title',
           { autoAlpha: 0, y: R ? 0 : 24 },
@@ -57,17 +65,19 @@ export default function IntroScene({ scene, onIntroDone, onSubmitName, onExited 
           '>-0.3',
         )
         // 5–7. the form card appears and unfolds in front of the robot
+        .call(() => sound.play('paper'), undefined, '+=0.1')
         .fromTo(
           '.name-card',
           { autoAlpha: 0, rotateX: R ? 0 : -88, y: R ? 0 : 30, transformOrigin: '50% 0%', transformPerspective: 900 },
           { autoAlpha: 1, rotateX: 0, y: 0, duration: R ? 0.4 : 0.95, ease: 'power3.out' },
-          '+=0.1',
+          '<',
         )
         .call(() => setPose('idle'))
         .call(() => cb.current.onIntroDone());
     }, root);
 
     return () => {
+      sound.stopFootsteps();
       ctx.current?.revert();
       ctx.current = null;
     };
@@ -85,7 +95,7 @@ export default function IntroScene({ scene, onIntroDone, onSubmitName, onExited 
         gsap.killTweensOf('.robot-wrap');
         const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } });
         // form folds into the robot's clipboard
-        tl.to('.name-card', {
+        tl.call(() => sound.play('paper'), undefined, 0).to('.name-card', {
           scale: R ? 1 : 0.25,
           y: R ? 0 : -110,
           autoAlpha: 0,
@@ -93,7 +103,10 @@ export default function IntroScene({ scene, onIntroDone, onSubmitName, onExited 
           duration: R ? 0.3 : 0.65,
           ease: 'power2.in',
         })
-          .call(() => setPose('celebrate'))
+          .call(() => {
+            setPose('celebrate');
+            sound.play('success');
+          })
           .to({}, { duration: R ? 0.3 : 1.05 })
           // soft fade of the scene's content (the backdrop stays put)
           .to('.intro-content', { autoAlpha: 0, scale: R ? 1 : 1.03, duration: 0.6 })

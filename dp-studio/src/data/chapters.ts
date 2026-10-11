@@ -58,9 +58,9 @@ export const BEGINNING = {
     { label: 'LOOKING AHEAD', text: 'Edit: what you set out to achieve.', placeholder: true },
   ] as (EditableText & { label: string })[],
   samples: [
-    { label: 'Early work 01' },
-    { label: 'Early work 02' },
-    { label: 'Early work 03' },
+    { label: 'Early work 01', image: 'early-1' },
+    { label: 'Early work 02', image: 'early-2' },
+    { label: 'Early work 03', image: 'early-3' },
   ] as Sample[],
 };
 
@@ -81,7 +81,7 @@ export const CRAFT = {
     { id: 'color', title: 'Color & Visual Hierarchy', blurb: 'Guiding the eye with colour and contrast.' },
     { id: 'social', title: 'Social Media Design', blurb: 'Designing for feeds, stories and formats.' },
     { id: 'brand', title: 'Branding & Visual Communication', blurb: 'Making a message look and feel consistent.' },
-  ].map((c) => ({ ...c, samples: [{ label: `${c.title} — sample 1` }, { label: `${c.title} — sample 2` }] })) as CraftCategory[],
+  ].map((c) => ({ ...c, samples: [1, 2].map((n) => ({ label: `${c.title} — sample ${n}`, image: `craft-${c.id}-${n}` })) })) as CraftCategory[],
 };
 
 /* ── Chapter 04 ─────────────────────────────────────────────── */
@@ -101,7 +101,7 @@ export const PROCESS = {
     { id: 'explore', title: 'Visual Exploration', text: 'Edit: the directions you tried — type, colour, layout.' },
     { id: 'feedback', title: 'Feedback & Revisions', text: 'Edit: what changed after review, and why.' },
     { id: 'final', title: 'Final Design', text: 'Edit: the finished piece and what you learned.' },
-  ].map((s) => ({ ...s, placeholder: true })) as ProcessStep[],
+  ].map((s, i) => ({ ...s, placeholder: true, image: `process-${i + 1}-${s.id}` })) as ProcessStep[],
 };
 
 /* ── Chapter 05 ─────────────────────────────────────────────── */

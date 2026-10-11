@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import ClosedBookScene, { LEAF_COUNT } from '../components/ClosedBookScene';
 import AnimatedKey from '../components/AnimatedKey';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { sound } from '../audio/sound';
 import type { Scene } from '../hooks/useSceneController';
 
 interface Props {
@@ -50,7 +51,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
       started.current.reveal = true;
       c.add(() => {
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, onComplete: () => setLockReady(true) });
-        tl.set('.book3d', { rotationY: R ? -22 : -64, rotationX: R ? 4 : 12, scale: R ? 1 : 0.82, opacity: 0 })
+        tl.call(() => sound.play('reveal'), undefined, 0).set('.book3d', { rotationY: R ? -22 : -64, rotationX: R ? 4 : 12, scale: R ? 1 : 0.82, opacity: 0 })
           // 1. glow expands from the centre
           .fromTo('.stage-glow', { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 1, duration: R ? 0.4 : 1.3 }, 0)
           .fromTo('.book-shadow', { opacity: 0 }, { opacity: 1, duration: 1.2 }, 0.4)
@@ -60,7 +61,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
           .fromTo('.book3d', { y: R ? 0 : -14 }, { y: 0, duration: R ? 0.01 : 1.1, ease: 'sine.out' }, 0.5);
         // 5. the lock catches a highlight
         if (!R) {
-          tl.fromTo('.lock-shine', { x: 0 }, { x: 170, duration: 1.1, ease: 'power2.inOut' }, '>-0.5');
+          tl.call(() => sound.play('shimmer'), undefined, '>-0.5').fromTo('.lock-shine', { x: 0 }, { x: 170, duration: 1.1, ease: 'power2.inOut' }, '<');
         }
         // 6. the instruction appears
         tl.fromTo(
@@ -105,6 +106,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
         if (R) {
           gsap
             .timeline()
+            .call(() => sound.play('unlock'))
             .to('.book-instruction', { autoAlpha: 0, duration: 0.3 })
             .to('.lock', { autoAlpha: 0, duration: 0.5 })
             .to('.book-aura', { opacity: 0.8, duration: 0.5 }, '<')
@@ -118,11 +120,12 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
 
         const tl = gsap.timeline();
         // 1. the lock reacts with a small bounce
-        tl.to('.lock', { y: -7, rotation: -4, duration: 0.18, ease: 'power2.out', transformOrigin: '50% 100%' })
+        tl.call(() => sound.play('lockTap'), undefined, 0).to('.lock', { y: -7, rotation: -4, duration: 0.18, ease: 'power2.out', transformOrigin: '50% 100%' })
           .to('.lock', { y: 0, rotation: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' })
           .to('.book-instruction', { autoAlpha: 0, y: 10, duration: 0.4 }, 0)
           // 2–3. the key slides in from the side with a sparkle trail
           .to(keyEl, { autoAlpha: 1, duration: 0.2 }, 0.3)
+          .call(() => sound.play('keyTrail'), undefined, 0.3)
           .to(keyEl, { x: nearX, duration: 1.1, ease: 'power2.inOut' }, 0.3)
           .to(keyEl, { y: nearY, rotation: 0, duration: 1.1, ease: 'power2.out' }, 0.3);
         sparks.forEach((s, i) => {
@@ -139,16 +142,20 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
         // 4. aligns with the keyhole
         tl.to(keyEl, { y: ky(holeY), duration: 0.25, ease: 'sine.inOut' }, tEnter - 0.1)
           // 5. slips into the keyhole
-          .to(keyEl, { x: inX, scale: 0.9, duration: 0.5, ease: 'power2.inOut' }, tEnter + 0.2)
+          .call(() => sound.play('keyInsert'), undefined, tEnter + 0.2)
+          .to(keyEl, { x: inX, scale: 0.9, duration: 0.5, ease: 'power2.inOut' }, '<')
           // 6. turns
-          .to(keyEl, { rotation: -80, duration: 0.8, ease: 'power2.inOut' }, '>0.1')
+          .call(() => sound.play('keyTurn'), undefined, '>0.1')
+          .to(keyEl, { rotation: -80, duration: 0.8, ease: 'power2.inOut' }, '<')
           // 7. the shackle pops open
-          .to('.lock-shackle', { y: -11, rotation: -32, svgOrigin: '57 50', duration: 0.5, ease: 'back.out(2.2)' }, '>-0.25')
+          .call(() => sound.play('unlock'), undefined, '>-0.25')
+          .to('.lock-shackle', { y: -11, rotation: -32, svgOrigin: '57 50', duration: 0.5, ease: 'back.out(2.2)' }, '<')
           .to('.lock-body', { y: 1.5, duration: 0.12, yoyo: true, repeat: 1 }, '<')
           // key withdraws
           .to(keyEl, { x: inX + keyW * 0.35, autoAlpha: 0, scale: 0.8, duration: 0.45, ease: 'power2.in' }, '>0.1')
           // 8. the lock lets go and falls away
-          .to('.lock', { y: 240, rotation: 24, autoAlpha: 0, duration: 0.85, ease: 'power2.in' }, '>-0.2')
+          .call(() => sound.play('lockDrop'), undefined, '>-0.2')
+          .to('.lock', { y: 240, rotation: 24, autoAlpha: 0, duration: 0.85, ease: 'power2.in' }, '<')
           // 9. copper light spills from the book's edges
           .to('.book-aura', { opacity: 0.9, scale: 1.04, duration: 0.9, ease: 'power2.out' }, '<0.1')
           .call(done);
@@ -175,6 +182,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
         if (R) {
           gsap
             .timeline()
+            .call(() => sound.play('bookOpen'))
             .to('.book-instruction', { autoAlpha: 0, duration: 0.2 })
             .to('.open-glow', { opacity: 1, duration: 0.5 }, 0)
             .to('.book-camera', { opacity: 0, duration: 0.6 }, 0.3)
@@ -184,7 +192,8 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
 
         const leaves = gsap.utils.toArray<HTMLElement>('.leaf').slice(0, LEAF_COUNT - 1);
         const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } });
-        tl.to('.book-instruction', { autoAlpha: 0, duration: 0.2 }, 0)
+        tl.call(() => sound.play('bookOpen'), undefined, 0)
+          .to('.book-instruction', { autoAlpha: 0, duration: 0.2 }, 0)
           // the book squares up and slides so the open spread is centred
           .to('.book3d', { rotationY: -4, rotationX: 2, x: bw / 2, duration: 2.6 }, 0)
           // 6. the camera gently moves closer
@@ -195,6 +204,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
           .to('.cover-shade', { opacity: 0.55, duration: 0.9, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 0.3);
         // 3–4. pages become visible and several turn
         leaves.forEach((leaf, i) => {
+          if (i % 2 === 0) tl.call(() => sound.play('pageTurn'), undefined, 1.35 + i * 0.2);
           tl.to(leaf, { rotationY: -180, duration: 1.15 }, 1.35 + i * 0.2);
         });
         // 5. a warm glow rises from the gutter

@@ -5,6 +5,8 @@
  * name. Anything without an `image`/`video` is shown as a clearly labelled
  * placeholder. Nothing here is a real client or result — replace it all.
  */
+import { projectAsset } from '../utils/assets';
+
 export type CollectionId = 'social' | 'banners' | 'email' | 'motion' | 'campaign' | 'other';
 
 export interface Collection {
@@ -46,6 +48,8 @@ const placeholders = (category: CollectionId, label: string): Project[] =>
     id: `${category}-${n}`,
     title: `${label} 0${n}`,
     category,
+    // Drop `<category>-<n>.jpg|png|webp` into src/assets/projects/ (e.g. social-1.jpg)
+    image: `${category}-${n}`,
     description: PLACEHOLDER_DESCRIPTION,
     details: ['Add tools used', 'Add format / size', 'Add your contribution'],
   }));
@@ -59,4 +63,4 @@ export const PROJECTS: Project[] = [
   ...placeholders('other', 'Design Work'),
 ];
 
-export const isPlaceholder = (p: Project) => !p.image && !p.video;
+export const isPlaceholder = (p: Project) => !projectAsset(p.image) && !projectAsset(p.video);

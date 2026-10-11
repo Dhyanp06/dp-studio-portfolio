@@ -20,5 +20,11 @@
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
-  }
+  },
+  "scripts": {
+  "dev": "vite",
+  "build": "tsc --noEmit && vite build",
+  "preview": "vite preview",
+  "check-images": "node scripts/check-images.mjs"
+}
 }

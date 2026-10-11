@@ -22,6 +22,7 @@ import { CHAPTERS, PAGE_COUNT } from '../data/chapters';
 import type { CollectionId, Project } from '../data/projects';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { sound } from '../audio/sound';
 
 interface Props {
   name: string;
@@ -84,7 +85,7 @@ export default function OpenBookPortfolio({ name, onEntered }: Props) {
     { chapter: 1, node: <CraftLeft /> },
     { chapter: 1, node: <CraftRight /> },
     { chapter: 2, node: (<WorkLeft><CollectionPicker value={collection} onChange={setCollection} /></WorkLeft>) },
-    { chapter: 2, node: <ProjectGrid collection={collection} onOpen={setOpenProject} /> },
+    { chapter: 2, node: <ProjectGrid collection={collection} onOpen={(p) => { sound.play('click'); setOpenProject(p); }} /> },
     { chapter: 3, node: <ProcessLeft /> },
     { chapter: 3, node: <ProcessRight /> },
     { chapter: 4, node: <GrowthLeft /> },
@@ -158,6 +159,7 @@ export default function OpenBookPortfolio({ name, onEntered }: Props) {
       const target = dir === 'next' ? index + step : index - step;
       if (target < 0 || target > maxIndex) return;
       busy.current = true;
+      sound.play('pageTurn');
       if (dual && !reducedRef.current) setTurn({ dir, from: index });
       else swap(target, dir);
     },
@@ -176,6 +178,7 @@ export default function OpenBookPortfolio({ name, onEntered }: Props) {
         return;
       }
       busy.current = true;
+      sound.play('pageTurn');
       swap(target, dir);
     },
     [dual, go, index, swap],
