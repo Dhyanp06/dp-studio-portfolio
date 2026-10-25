@@ -7,4 +7,4 @@
  *  'key'      → the visitor just clicks the lock and the key unlocks the book.
  *               (no email, no server needed)
  */
-export const UNLOCK_MODE: 'passcode' | 'key' = 'passcode';
+   export const UNLOCK_MODE: 'passcode' | 'key' = 'key';
