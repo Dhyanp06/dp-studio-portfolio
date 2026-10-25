@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import ClosedBookScene, { LEAF_COUNT } from '../components/ClosedBookScene';
-import AnimatedKey from '../components/AnimatedKey';
+import PasscodeModal from '../components/PasscodeModal';
+import { UNLOCK_MODE } from '../config';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { sound } from '../audio/sound';
 import type { Scene } from '../hooks/useSceneController';
@@ -25,6 +26,7 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
   const started = useRef({ reveal: false, unlock: false, open: false });
   const reduced = useReducedMotion();
   const [lockReady, setLockReady] = useState(false);
+  const [askPass, setAskPass] = useState(false);
 
   const advanceRef = useRef(onAdvance);
   advanceRef.current = onAdvance;
@@ -73,35 +75,22 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
       });
     }
 
-    /* ── Scene 5 · key, lock, unlock ────────────────────────────── */
+    /* ── Scene 5 · key, lock, unlock ──────────────────────────────
+       All positions are in the lock's own coordinate space (the cover face), so the
+       key follows the book's 3D tilt. The key comes in from the right, swings up to
+       point at the keyway on the bottom of the lock, slides up INTO the lock (it is
+       drawn behind the lock face, so the tip disappears), turns on its own axis, the
+       shackle pops, the key slips out and the lock lets go. */
     if (scene === 'unlocking' && !started.current.unlock) {
       started.current.unlock = true;
       c.add(() => {
-        const rootRect = el.getBoundingClientRect();
-        const holeEl = el.querySelector('.keyhole') as SVGGraphicsElement | null;
+        const lockEl = el.querySelector('.lock') as HTMLElement | null;
         const keyEl = el.querySelector('.key') as HTMLElement | null;
-        if (!holeEl || !keyEl) {
-          advanceRef.current('unlocking');
+        const done = () => advanceRef.current('unlocking');
+        if (!lockEl || !keyEl) {
+          done();
           return;
         }
-        const hole = holeEl.getBoundingClientRect();
-        const keyW = keyEl.offsetWidth;
-        const keyH = keyEl.offsetHeight;
-        const tipX = keyW * 0.025;
-        const tipY = keyH / 2;
-        // key top-left coordinates (in the stage) that put the key's tip at (px, py)
-        const kx = (px: number) => px - rootRect.left - tipX;
-        const ky = (py: number) => py - rootRect.top - tipY;
-
-        const holeX = hole.left + hole.width / 2;
-        const holeY = hole.top + hole.height / 2;
-        const startX = kx(rootRect.right + keyW);
-        const startY = ky(holeY - 110);
-        const nearX = kx(holeX + keyW * 0.85);
-        const nearY = ky(holeY);
-        const inX = kx(holeX + 2);
-
-        const done = () => advanceRef.current('unlocking');
 
         if (R) {
           gsap
@@ -114,51 +103,81 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
           return;
         }
 
-        gsap.set(keyEl, { x: startX, y: startY, autoAlpha: 0, rotation: 8, transformOrigin: `${tipX}px ${tipY}px` });
-        const sparks = gsap.utils.toArray<HTMLElement>('.key-spark');
-        gsap.set(sparks, { x: startX, y: startY, autoAlpha: 0 });
+        const lx = lockEl.offsetLeft;
+        const ly = lockEl.offsetTop;
+        const lw = lockEl.offsetWidth;
+        const lh = lockEl.offsetHeight;
+        const keyW = keyEl.offsetWidth;
+        const keyH = keyEl.offsetHeight;
+        const tipX = keyW * 0.025; // the key tip, inside the key box (it points left)
+        const tipY = keyH / 2;
+        // keyway: bottom-centre of the lock (SVG viewBox 80x104 → x 40, y 98)
+        const hx = lx + lw * 0.5;
+        const hy = ly + lh * (98 / 104);
+        // top-left of the key box that puts its tip at (px, py) — the key pivots on its tip
+        const at = (px: number, py: number) => ({ x: px - tipX, y: py - tipY });
+
+        const sA = at(hx + keyW * 2.0, hy + keyW * 0.95); // off to the right
+        const sB = at(hx + keyW * 0.45, hy + keyW * 0.7); // swinging in
+        const sC = at(hx, hy + keyW * 0.42); // under the keyway, pointing up
+        const sD = at(hx, ly + lh * 0.6); // tip inside the lock (hidden behind the face)
+
+        gsap.set(keyEl, { x: sA.x, y: sA.y, rotation: 0, scaleY: 1, autoAlpha: 0, transformOrigin: `${tipX}px ${tipY}px` });
+
+        const T_FLY = 0.35;
+        const D_FLY = 1.15;
+        const T_ALIGN = T_FLY + D_FLY; // 1.5
+        const T_INSERT = T_ALIGN + 0.55; // 2.05
+        const T_TURN = T_INSERT + 0.5; // 2.55
+        const T_POP = T_TURN + 0.8; // 3.35
 
         const tl = gsap.timeline();
         // 1. the lock reacts with a small bounce
-        tl.call(() => sound.play('lockTap'), undefined, 0).to('.lock', { y: -7, rotation: -4, duration: 0.18, ease: 'power2.out', transformOrigin: '50% 100%' })
-          .to('.lock', { y: 0, rotation: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' })
+        tl.call(() => sound.play('lockTap'), undefined, 0)
+          .to('.lock', { y: -7, rotation: -4, duration: 0.18, ease: 'power2.out', transformOrigin: '50% 100%' }, 0)
+          .to('.lock', { y: 0, rotation: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' }, 0.18)
           .to('.book-instruction', { autoAlpha: 0, y: 10, duration: 0.4 }, 0)
-          // 2–3. the key slides in from the side with a sparkle trail
-          .to(keyEl, { autoAlpha: 1, duration: 0.2 }, 0.3)
-          .call(() => sound.play('keyTrail'), undefined, 0.3)
-          .to(keyEl, { x: nearX, duration: 1.1, ease: 'power2.inOut' }, 0.3)
-          .to(keyEl, { y: nearY, rotation: 0, duration: 1.1, ease: 'power2.out' }, 0.3);
-        sparks.forEach((s, i) => {
-          const t0 = 0.3 + i * 0.07;
-          const wob = i % 2 ? 7 : -7;
-          tl.fromTo(
-            s,
-            { x: startX + keyW * 0.6, y: startY + wob, autoAlpha: 0, scale: 0.5 },
-            { x: nearX + keyW * 0.5, y: nearY + wob * 1.4, autoAlpha: 0.95, scale: 1, duration: 0.9, ease: 'power2.inOut' },
-            t0,
-          ).to(s, { autoAlpha: 0, scale: 0.2, duration: 0.35 }, t0 + 0.9);
+          // 2. the key appears and swings in from the right (tip first), leaving sparkles
+          .to(keyEl, { autoAlpha: 1, duration: 0.2 }, T_FLY)
+          .call(() => sound.play('keyTrail'), undefined, T_FLY)
+          .to(keyEl, { x: sB.x, y: sB.y, rotation: 55, duration: D_FLY, ease: 'power2.inOut' }, T_FLY)
+          // 3. it straightens to point straight up at the keyway
+          .to(keyEl, { x: sC.x, y: sC.y, rotation: 90, duration: 0.55, ease: 'power2.out' }, T_ALIGN)
+          // 4. it slides up into the keyway — the tip vanishes behind the lock face
+          .call(() => sound.play('keyInsert'), undefined, T_INSERT)
+          .to(keyEl, { x: sD.x, y: sD.y, duration: 0.42, ease: 'power1.inOut' }, T_INSERT)
+          // 5. it turns about its own axis (flattens edge-on), with little mechanical judders
+          .call(() => sound.play('keyTurn'), undefined, T_TURN)
+          .to(keyEl, { scaleY: 0.14, duration: 0.7, ease: 'power2.inOut' }, T_TURN)
+          .to('.lock-body', { x: 0.7, duration: 0.07, yoyo: true, repeat: 7, ease: 'none' }, T_TURN + 0.05)
+          // 6. the shackle pops open
+          .call(() => sound.play('unlock'), undefined, T_POP)
+          .to('.lock-shackle', { y: -11, rotation: -32, svgOrigin: '57 50', duration: 0.5, ease: 'back.out(2.2)' }, T_POP)
+          .to('.lock-body', { y: 1.5, duration: 0.12, yoyo: true, repeat: 1 }, T_POP)
+          // the key slips back out and fades
+          .to(keyEl, { y: sC.y + keyW * 0.55, scaleY: 1, autoAlpha: 0, duration: 0.45, ease: 'power2.in' }, T_POP + 0.12)
+          // 7. the lock lets go and falls away
+          .call(() => sound.play('lockDrop'), undefined, T_POP + 0.3)
+          .to('.lock', { y: 240, rotation: 24, autoAlpha: 0, duration: 0.85, ease: 'power2.in' }, T_POP + 0.3)
+          // 8. copper light spills from the book's edges
+          .to('.book-aura', { opacity: 0.9, scale: 1.04, duration: 0.9, ease: 'power2.out' }, T_POP + 0.35)
+          .call(done, undefined, '>');
+
+        // sparkle trail, emitted along the key's flight path
+        const flyEase = gsap.parseEase('power2.inOut');
+        const sparks = Array.from(el.querySelectorAll<HTMLElement>('.key-spark'));
+        sparks.forEach((spark, i) => {
+          const u = (i + 1) / (sparks.length + 1);
+          const e = flyEase(u);
+          const rot = (55 * e * Math.PI) / 180;
+          // the key's far end (its bow) at that moment of the flight, plus a little wobble
+          const px = sA.x + tipX + (sB.x - sA.x) * e + Math.cos(rot) * keyW * 0.9;
+          const py = sA.y + tipY + (sB.y - sA.y) * e + Math.sin(rot) * keyW * 0.9 + (i % 2 ? 7 : -7);
+          const t = T_FLY + u * D_FLY;
+          tl.set(spark, { x: px, y: py, scale: 0.5, autoAlpha: 0 }, t)
+            .to(spark, { autoAlpha: 0.95, scale: 1, duration: 0.15 }, t)
+            .to(spark, { autoAlpha: 0, scale: 0.2, y: py + 16, duration: 0.45, ease: 'power1.in' }, t + 0.15);
         });
-        const tEnter = 0.3 + 1.1 + 0.15;
-        // 4. aligns with the keyhole
-        tl.to(keyEl, { y: ky(holeY), duration: 0.25, ease: 'sine.inOut' }, tEnter - 0.1)
-          // 5. slips into the keyhole
-          .call(() => sound.play('keyInsert'), undefined, tEnter + 0.2)
-          .to(keyEl, { x: inX, scale: 0.9, duration: 0.5, ease: 'power2.inOut' }, '<')
-          // 6. turns
-          .call(() => sound.play('keyTurn'), undefined, '>0.1')
-          .to(keyEl, { rotation: -80, duration: 0.8, ease: 'power2.inOut' }, '<')
-          // 7. the shackle pops open
-          .call(() => sound.play('unlock'), undefined, '>-0.25')
-          .to('.lock-shackle', { y: -11, rotation: -32, svgOrigin: '57 50', duration: 0.5, ease: 'back.out(2.2)' }, '<')
-          .to('.lock-body', { y: 1.5, duration: 0.12, yoyo: true, repeat: 1 }, '<')
-          // key withdraws
-          .to(keyEl, { x: inX + keyW * 0.35, autoAlpha: 0, scale: 0.8, duration: 0.45, ease: 'power2.in' }, '>0.1')
-          // 8. the lock lets go and falls away
-          .call(() => sound.play('lockDrop'), undefined, '>-0.2')
-          .to('.lock', { y: 240, rotation: 24, autoAlpha: 0, duration: 0.85, ease: 'power2.in' }, '<')
-          // 9. copper light spills from the book's edges
-          .to('.book-aura', { opacity: 0.9, scale: 1.04, duration: 0.9, ease: 'power2.out' }, '<0.1')
-          .call(done);
       });
     }
 
@@ -217,6 +236,21 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
   }, [scene]);
 
   const showSkip = scene === 'unlocking' || scene === 'book-opening';
+  const passcodeMode = UNLOCK_MODE === 'passcode';
+
+  // Clicking the lock: 'key' mode starts the unlock straight away; 'passcode' mode first
+  // asks for an email passcode, and only the server's "verified" answer starts the unlock.
+  const onLock = () => {
+    if (!passcodeMode) {
+      advanceRef.current('closed-book');
+      return;
+    }
+    sound.play('lockTap');
+    ctx.current?.add(() => {
+      gsap.fromTo('.lock', { rotation: -5, transformOrigin: '50% 100%' }, { rotation: 0, duration: 0.6, ease: 'elastic.out(1, 0.35)' });
+    });
+    setAskPass(true);
+  };
 
   return (
     <div ref={root} className="book-stage" data-scene={scene}>
@@ -225,14 +259,22 @@ export default function BookOpeningScene({ scene, onAdvance, onSkip }: Props) {
 
       <h1 className="sr-only">DP Studio — My 6-month journey, a story waiting to be unlocked</h1>
 
-      <ClosedBookScene onLockActivate={() => advanceRef.current('closed-book')} lockDisabled={!lockReady || scene !== 'closed-book'} />
+      <ClosedBookScene onLockActivate={onLock} lockDisabled={!lockReady || scene !== 'closed-book'} />
 
       <div className="book-instruction">
         <p className="instr-top">A STORY WAITING TO BE UNLOCKED</p>
-        <p className="instr-bottom">CLICK THE LOCK TO BEGIN</p>
+        <p className="instr-bottom">{passcodeMode ? 'CLICK THE LOCK TO GET YOUR PASSCODE' : 'CLICK THE LOCK TO BEGIN'}</p>
       </div>
 
-      <AnimatedKey />
+      {askPass && scene === 'closed-book' && (
+        <PasscodeModal
+          onClose={() => setAskPass(false)}
+          onVerified={() => {
+            setAskPass(false);
+            advanceRef.current('closed-book');
+          }}
+        />
+      )}
 
       {showSkip && (
         <button type="button" className="skip-link" onClick={onSkip}>

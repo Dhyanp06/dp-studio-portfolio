@@ -1,7 +1,11 @@
+import { useState } from 'react';
+import { Maximize2 } from 'lucide-react';
 import { BEGINNING, CHAPTERS, CRAFT, GROWTH, PROCESS, type EditableText, type Sample } from '../data/chapters';
 import { PROFILE } from '../data/profile';
 import { projectAsset } from '../utils/assets';
 import Placeholder from './Placeholder';
+import ImageLightbox from './ImageLightbox';
+import { linkFor } from '../data/imageLinks';
 
 /* ── shared bits ─────────────────────────────────────────────── */
 
@@ -16,14 +20,21 @@ function Editable({ item, as: Tag = 'p' }: { item: EditableText; as?: 'p' | 'spa
 
 function Figure({ sample, ratio = '4 / 3' }: { sample: Sample; ratio?: string }) {
   const src = projectAsset(sample.image);
+  const [zoom, setZoom] = useState(false);
   return (
     <figure className="figure">
       {src ? (
-        <img src={src} alt={sample.label} loading="lazy" decoding="async" style={{ aspectRatio: ratio }} />
+        <button type="button" className="figure-btn" onClick={() => setZoom(true)} aria-label={`View full size: ${sample.label}`}>
+          <img src={src} alt={sample.label} loading="lazy" decoding="async" style={{ aspectRatio: ratio }} />
+          <span className="zoom-hint" aria-hidden="true">
+            <Maximize2 size={14} />
+          </span>
+        </button>
       ) : (
         <Placeholder label={sample.label} compact ratio={ratio} />
       )}
       <figcaption>{sample.label}</figcaption>
+      {zoom && src && <ImageLightbox src={src} title={sample.label} link={linkFor(sample.image)} onClose={() => setZoom(false)} />}
     </figure>
   );
 }

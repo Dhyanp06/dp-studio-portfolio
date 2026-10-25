@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import { COLLECTIONS, PROJECTS, isPlaceholder, type Project } from '../data/projects';
 import { projectAsset } from '../utils/assets';
 import Placeholder from './Placeholder';
+import ImageLightbox from './ImageLightbox';
+import { linkFor } from '../data/imageLinks';
 
 interface Props {
   project: Project;
@@ -37,6 +39,7 @@ function BeforeAfter({ before, after, title }: { before: string; after: string; 
 /** A full book-spread view of a single project: media left, story right. */
 export default function ProjectDetail({ project, onClose, onNavigate }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [zoom, setZoom] = useState(false);
   const siblings = PROJECTS.filter((p) => p.category === project.category);
   const idx = siblings.findIndex((p) => p.id === project.id);
   const prev = idx > 0 ? siblings[idx - 1] : undefined;
@@ -79,7 +82,12 @@ export default function ProjectDetail({ project, onClose, onNavigate }: Props) {
           ) : video ? (
             <video src={video} controls playsInline preload="metadata" poster={img} />
           ) : img ? (
-            <img src={img} alt={project.title} loading="lazy" decoding="async" />
+            <button type="button" className="figure-btn figure-btn--detail" onClick={() => setZoom(true)} aria-label={`View full size: ${project.title}`}>
+              <img src={img} alt={project.title} loading="lazy" decoding="async" />
+              <span className="zoom-hint" aria-hidden="true">
+                <Maximize2 size={16} />
+              </span>
+            </button>
           ) : (
             <Placeholder label="Your project image or video goes here" ratio="4 / 5" />
           )}
@@ -110,6 +118,7 @@ export default function ProjectDetail({ project, onClose, onNavigate }: Props) {
           </div>
         </div>
       </div>
+      {zoom && img && <ImageLightbox src={img} title={project.title} link={linkFor(project.image)} onClose={() => setZoom(false)} />}
     </div>
   );
 }

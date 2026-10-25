@@ -770,6 +770,8 @@ ol {
   pointer-events: none;
 }
 .lock {
+  position: relative;
+  z-index: 2; /* above the key, so the key slides in "behind" the lock face */
   pointer-events: auto;
   width: calc(var(--bw) * 0.27);
   padding: 0;
@@ -796,10 +798,10 @@ ol {
   overflow: visible;
 }
 
-/* key + sparkle trail (positioned inside the stage; GSAP drives x/y) */
+/* key + sparkle trail: children of .lock-slot, so they share the lock's (tilted) plane; GSAP drives x/y */
 .key {
   position: absolute;
-  z-index: 6;
+  z-index: 1;
   left: 0;
   top: 0;
   width: calc(var(--bw) * 0.38);
@@ -816,7 +818,7 @@ ol {
 }
 .key-spark {
   position: absolute;
-  z-index: 5;
+  z-index: 3;
   left: 0;
   top: 0;
   width: 14px;
@@ -1800,4 +1802,188 @@ ol {
   color: var(--copper-text);
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+/* ── Passcode dialog ────────────────────────────────────────── */
+.pass-modal {
+  width: min(430px, 100%);
+}
+.pass-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pass-email {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pass-code {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.45em;
+  padding-left: calc(16px + 0.45em);
+}
+.pass-hint {
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #5f4a1c;
+  background: #fff3d6;
+  border: 1px dashed var(--deep-copper);
+  border-radius: 10px;
+}
+.pass-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.text-btn {
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--copper-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.text-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* ── Image full-view popup ──────────────────────────────────── */
+@keyframes lb-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.figure-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.figure-btn img {
+  transition: transform 0.35s ease;
+}
+.figure-btn:hover img {
+  transform: scale(1.03);
+}
+.zoom-hint {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(23, 23, 23, 0.72);
+  color: #fff;
+  pointer-events: none;
+}
+.figure-btn--detail {
+  border-radius: 8px;
+}
+.lb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 32px);
+  background: rgba(23, 16, 10, 0.88);
+  backdrop-filter: blur(6px);
+  animation: fade-in 0.25s ease both;
+}
+.lb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 100%;
+  max-height: 100%;
+  animation: lb-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lb-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(94vw, 1400px);
+  max-height: calc(100dvh - 140px);
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+}
+.lb-close {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  background: #fff;
+  border-color: var(--copper);
+  color: var(--charcoal);
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.6);
+}
+.lb-close:hover {
+  background: var(--peach);
+}
+.lb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: #fff;
+  text-align: center;
+}
+.lb-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.lb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--copper-grad);
+  color: var(--charcoal);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 10px 22px -8px rgba(198, 106, 36, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.lb-link:hover {
+  filter: brightness(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb-backdrop,
+  .lb {
+    animation: none;
+  }
+  .figure-btn img {
+    transition: none;
+  }
 }
