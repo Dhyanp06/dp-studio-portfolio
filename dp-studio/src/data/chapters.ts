@@ -79,8 +79,6 @@ export const CRAFT = {
     { id: 'type', title: 'Typography', blurb: 'Choosing, pairing and setting type with intent.' },
     { id: 'layout', title: 'Layout & Composition', blurb: 'Grids, spacing and balance on the page.' },
     { id: 'color', title: 'Color & Visual Hierarchy', blurb: 'Guiding the eye with colour and contrast.' },
-    { id: 'social', title: 'Social Media Design', blurb: 'Designing for feeds, stories and formats.' },
-    { id: 'brand', title: 'Branding & Visual Communication', blurb: 'Making a message look and feel consistent.' },
   ].map((c) => ({ ...c, samples: [1, 2].map((n) => ({ label: `${c.title} — sample ${n}`, image: `craft-${c.id}-${n}` })) })) as CraftCategory[],
 };
 
@@ -113,15 +111,39 @@ export interface Month {
 
 /** Labels and text are editable — change them to match what actually happened. */
 export const GROWTH = {
-  intro: 'Six months, six themes. Edit each note to reflect what really happened that month.',
+  intro: 'Six months, six themes — a month-by-month look at how I grew as a designer.',
   months: [
-    { month: 'MAY', label: 'BEGINNING' },
-    { month: 'JUNE', label: 'LEARNING' },
-    { month: 'JULY', label: 'EXPERIMENTING' },
-    { month: 'AUGUST', label: 'CREATING' },
-    { month: 'SEPTEMBER', label: 'REFINING' },
-    { month: 'OCTOBER', label: 'REFLECTING' },
-  ].map((m) => ({ ...m, text: `Edit this note to describe ${m.month.charAt(0)}${m.month.slice(1).toLowerCase()}.` })) as Month[],
+    {
+      month: 'MAY',
+      label: 'BEGINNING',
+      text: 'I joined CreatPix Infotech LLP as a Graphic Designer Intern and started learning how design work is planned and delivered.',
+    },
+    {
+      month: 'JUNE',
+      label: 'LEARNING',
+      text: 'I built my foundations in typography, layout and colour, and became more confident with my design tools.',
+    },
+    {
+      month: 'JULY',
+      label: 'EXPERIMENTING',
+      text: 'I tried new ideas and tools, including AI assistants like ChatGPT, Claude and Sarvam AI, to explore different directions for my designs.',
+    },
+    {
+      month: 'AUGUST',
+      label: 'CREATING',
+      text: 'I started creating finished pieces, such as logos, an avatar and posts for CreatPix, taking each one from idea to final design.',
+    },
+    {
+      month: 'SEPTEMBER',
+      label: 'REFINING',
+      text: 'I focused on the details, like spacing, hierarchy and consistency, and improved my work by revising it.',
+    },
+    {
+      month: 'OCTOBER',
+      label: 'REFLECTING',
+      text: 'I looked back on the six months, from my first designs to my reels, logos and posts, and on how much I have grown as a designer.',
+    },
+  ] as Month[],
 };
 
 /* ── Final chapter ──────────────────────────────────────────── */

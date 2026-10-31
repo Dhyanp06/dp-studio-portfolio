@@ -1164,7 +1164,8 @@ ol {
 .figure img {
   display: block;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain; /* show the whole image — never crop it */
+  background: #f6ece0;
   border-radius: 8px;
 }
 .figure figcaption {
@@ -1381,11 +1382,14 @@ ol {
   position: relative;
   display: block;
 }
-.project-media img {
+.project-media img,
+.project-media video {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain; /* show the whole image — never crop it */
+  background: #f6ece0;
+  pointer-events: none;
 }
 .project-media .placeholder {
   border: 0;
@@ -1467,6 +1471,87 @@ ol {
   background: var(--peach);
   border-color: var(--deep-copper);
   transform: translateY(-1px);
+}
+
+.cp-block {
+  margin-top: 22px;
+  width: 100%;
+  max-width: 440px;
+}
+.cp-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.cp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: 11px 30px 11px 14px;
+  color: var(--charcoal);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(198, 106, 36, 0.4);
+  border-radius: 12px;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+a.cp-card:hover {
+  background: var(--peach);
+  border-color: var(--deep-copper);
+  transform: translateY(-2px);
+}
+.cp-card strong {
+  font-size: 0.9rem;
+}
+.cp-card small {
+  font-size: 0.68rem;
+  color: #6f5f50;
+}
+.cp-ext {
+  position: absolute;
+  top: 12px;
+  right: 11px;
+  color: var(--deep-copper);
+}
+.cp-card.is-off {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.email-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 8px;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: #6f5f50;
+}
+.email-help a,
+.email-help button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--deep-copper);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.email-help-status {
+  flex-basis: 100%;
+  min-height: 1em;
+  font-weight: 600;
+  color: var(--charcoal);
+  word-break: break-all;
 }
 
 /* controls + chapter navigation */
@@ -1985,5 +2070,48 @@ ol {
   }
   .figure-btn img {
     transition: none;
+  }
+}
+
+/* magic wand cursor — the tip of the wand is the click point */
+:root {
+  --cursor-wand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='7' y1='7' x2='28' y2='28' stroke='%23171717' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='7' y1='7' x2='28' y2='28' stroke='%23C66A24' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='19' y1='19' x2='28' y2='28' stroke='%237A4417' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 0.3999999999999999 L5.26 2.74 L7.6 4 L5.26 5.26 L4 7.6 L2.74 5.26 L0.3999999999999999 4 L2.74 2.74 Z' fill='%23FFF9F3' stroke='%23F28C28' stroke-width='.8' stroke-linejoin='round'/%3E%3C/svg%3E") 4 4, auto;
+  --cursor-wand-active: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='4' cy='4' r='7' fill='%23F6C27A' fill-opacity='.45'/%3E%3Cline x1='7' y1='7' x2='28' y2='28' stroke='%23171717' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='7' y1='7' x2='28' y2='28' stroke='%23C66A24' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='19' y1='19' x2='28' y2='28' stroke='%237A4417' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 0.10000000000000009 L5.365 2.635 L7.9 4 L5.365 5.365 L4 7.9 L2.635 5.365 L0.10000000000000009 4 L2.635 2.635 Z' fill='%23FFF9F3' stroke='%23F28C28' stroke-width='.8' stroke-linejoin='round'/%3E%3C/svg%3E") 4 4, pointer;
+}
+html,
+body {
+  cursor: var(--cursor-wand);
+}
+html a,
+html button,
+html [role='button'],
+html summary,
+html label,
+html input[type='range'],
+html input[type='checkbox'],
+html .figure-btn,
+html .project-card {
+  cursor: var(--cursor-wand-active);
+}
+html button:disabled {
+  cursor: var(--cursor-wand);
+}
+html input[type='text'],
+html input[type='email'],
+html input[type='search'],
+html textarea {
+  cursor: text;
+}
+.wand-trail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .wand-trail {
+    display: none;
   }
 }

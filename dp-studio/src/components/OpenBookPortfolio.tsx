@@ -66,7 +66,7 @@ export default function OpenBookPortfolio({ name, onEntered }: Props) {
 
   const [index, setIndex] = useState(0);
   const [turn, setTurn] = useState<Turn | null>(null);
-  const [collection, setCollection] = useState<CollectionId>('social');
+  const [collection, setCollection] = useState<CollectionId>('reels');
   const [openProject, setOpenProject] = useState<Project | null>(null);
   const [navOpen, setNavOpen] = useState(false);
 

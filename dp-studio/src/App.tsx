@@ -3,6 +3,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PortfolioApp from './components/PortfolioApp';
 import Logo from './components/Logo';
 import EnterGate from './components/EnterGate';
+import MagicWand from './components/MagicWand';
 
 function Loader() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <MagicWand />
       {!fontsReady ? <Loader /> : !entered ? <EnterGate onEnter={() => setEntered(true)} /> : <PortfolioApp />}
     </ErrorBoundary>
   );

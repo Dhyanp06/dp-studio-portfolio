@@ -8,14 +8,14 @@ const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'assets',
 const files = existsSync(dir) ? readdirSync(dir) : [];
 const byBase = new Map(files.map((f) => [parse(f).name, f]));
 
-const cats = ['social', 'banners', 'email', 'motion', 'campaign', 'other'];
+const work = { reels: 2, logos: 2, avatar: 1, creatpix: 3 };
 const craft = ['type', 'layout', 'color', 'social', 'brand'];
 const process = ['brief', 'concept', 'explore', 'feedback', 'final'];
 
 const groups = {
   'Chapter 01': ['early-1', 'early-2', 'early-3'],
   'Chapter 02': craft.flatMap((c) => [1, 2].map((n) => `craft-${c}-${n}`)),
-  'Chapter 03': cats.flatMap((c) => [1, 2].map((n) => `${c}-${n}`)),
+  'Chapter 03': Object.entries(work).flatMap(([c, k]) => Array.from({ length: k }, (_, i) => `${c}-${i + 1}`)),
   'Chapter 04': process.map((p, i) => `process-${i + 1}-${p}`),
 };
 

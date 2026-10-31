@@ -186,10 +186,7 @@ function MonthList({ from, to }: { from: number; to: number }) {
           <h3 className="growth-title">
             {m.month} — {m.label}
           </h3>
-          <p className="ph-text">
-            {m.text}
-            <span className="ph-tag">EDITABLE</span>
-          </p>
+          <p className="page-p">{m.text}</p>
         </li>
       ))}
     </ol>

@@ -5,14 +5,14 @@ import { LINKS } from './profile';
  *
  * - By default every image links to your "Portfolio projects" link from src/data/profile.ts.
  * - To give ONE image its own link, add a line below. The key is the image name used in the
- *   data files (the file name without its extension), e.g. 'social-1', 'early-2', 'craft-type-1'.
+ *   data files (the file name without its extension), e.g. 'logos-1', 'early-2', 'craft-type-1'.
  * - Use `''` (empty) to hide the link button for a particular image.
  *
- *   'social-1': 'https://www.instagram.com/p/your-post/',
- *   'banners-1': { href: 'https://example.com/case-study', label: 'Read the case study' },
+ *   'reels-1': 'https://www.instagram.com/reel/your-reel/',
+ *   'creatpix-1': { href: 'https://example.com/case-study', label: 'Read the case study' },
  */
 export const IMAGE_LINKS: Record<string, string | { href: string; label?: string }> = {
-  // 'social-1': 'https://www.instagram.com/p/your-post/',
+   'reels-1': 'https://ecomspy.io/',
 };
 
 export interface ImageLink {

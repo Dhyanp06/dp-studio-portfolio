@@ -46,13 +46,17 @@ interface CardProps {
 
 function ProjectCard({ project, onOpen }: CardProps) {
   const img = projectAsset(project.image);
-  const hasVideo = Boolean(project.video);
+  const video = projectAsset(project.video);
+  const hasVideo = Boolean(video);
   return (
     <li>
       <button type="button" className="project-card" onClick={() => onOpen(project)} aria-label={`Open project: ${project.title}`}>
         <span className="project-media">
           {img ? (
             <img src={img} alt={project.title} loading="lazy" decoding="async" />
+          ) : video ? (
+            // no cover image: show the first frame of the video as the thumbnail
+            <video src={`${video}#t=0.1`} muted playsInline preload="metadata" aria-label={project.title} tabIndex={-1} />
           ) : (
             <Placeholder label={isPlaceholder(project) ? 'Placeholder' : 'Add image'} compact ratio="4 / 3" />
           )}

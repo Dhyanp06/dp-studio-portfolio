@@ -1,4 +1,4 @@
-import logoUrl from '../assets/logo/logo.svg';
+import logoUrl from '../assets/logo/logo.jpeg';
 
 interface Props {
   height?: number | string;
