@@ -45,17 +45,21 @@ export const BEGINNING = {
   intro:
     'In May 2026 I began a six-month internship as a Graphic Designer Intern at CreatPix Infotech LLP. This book is a record of that journey — the work, the lessons and the growth.',
   expectations: {
-    text: 'Write about what you hoped to learn and achieve when the internship began.',
-    placeholder: true,
+    text: 'When the internship began, I hoped to learn how real design work is done, build my skills in tools like Canva and Adobe After Effects, and turn my ideas into finished designs.',
   } as EditableText,
   earlyWork: {
-    text: 'Describe your first design tasks and what they taught you.',
-    placeholder: true,
+    text: 'My first design tasks helped me practise the basics and showed me how much care goes into even a simple design. These early pieces are where my journey started.',
   } as EditableText,
   timeline: [
     { label: 'MAY 2026', text: 'The internship begins at CreatPix Infotech LLP.' },
-    { label: 'THE FIRST WEEKS', text: 'Edit: your first tasks and early learning.', placeholder: true },
-    { label: 'LOOKING AHEAD', text: 'Edit: what you set out to achieve.', placeholder: true },
+    {
+      label: 'THE FIRST WEEKS',
+      text: 'I settled in, learned how the team works, and started on my first small design tasks while getting to know the tools.',
+    },
+    {
+      label: 'LOOKING AHEAD',
+      text: 'I set out to grow my skills in typography, layout and colour, and to create work I could be proud of.',
+    },
   ] as (EditableText & { label: string })[],
   samples: [
     { label: 'Early work 01', image: 'early-1' },
