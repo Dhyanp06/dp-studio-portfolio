@@ -64,6 +64,8 @@ export default function PasscodeModal({ onClose, onVerified }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [devMode, setDevMode] = useState(false);
+  // Hosts without server memory (Vercel) hand back a signed token that must be sent with the code.
+  const [token, setToken] = useState<string | null>(null);
   const [logVisitors, setLogVisitors] = useState(false);
 
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -152,6 +154,8 @@ export default function PasscodeModal({ onClose, onVerified }: Props) {
         return 'That passcode has expired. Please request a new one.';
       case 'too_many_attempts':
         return 'Too many wrong attempts. Please request a new passcode.';
+      case 'not_configured':
+        return 'The email passcode is not set up on this site yet. Please try again later.';
       case 'invalid_input':
         return 'Please enter the 6-digit passcode from your email.';
       default:
@@ -178,6 +182,7 @@ export default function PasscodeModal({ onClose, onVerified }: Props) {
       setCode('');
       setCooldown(Number(r.data.retryAfter) || 60);
       setDevMode(r.data.devMode === true);
+      setToken(typeof r.data.token === 'string' ? r.data.token : null);
       setStep('code');
     } else if (r.data.error === 'cooldown') {
       // a code was just sent to this address — carry on to the code step
@@ -200,7 +205,7 @@ export default function PasscodeModal({ onClose, onVerified }: Props) {
     }
     setBusy(true);
     setError(null);
-    const r = await call('/api/verify-code', { email, code });
+    const r = await call('/api/verify-code', { email, code, ...(token ? { token } : {}) });
     if (!alive.current) return;
     setBusy(false);
     if (r.ok && r.data.ok === true) {
